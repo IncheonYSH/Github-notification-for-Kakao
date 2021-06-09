@@ -16,15 +16,18 @@ Github 의 webhook 을 이용하여 지정한 repository 에 이벤트가 발생
 
 <br>
 
-<br>
+# Todo
+
+* ngrok 배제
+* 현재 깃허브 repository 와 채팅방 개수가 n:1 의 관계가 있는데 n : m 의 관계로 개선할것
 
 <br>
 
-### 필요 패키지
+# Requirements
 
 ```powershell
-pip install Flask
-pip install pywin32
+flask
+pywin32
 ```
 
 <br>
@@ -92,3 +95,5 @@ pip install pywin32
      ![run](README/run.PNG)
    
    * 완료되었습니다. 이제 카카오톡으로 repository 의 이벤트 알림을 받을 수 있습니다.
+
+

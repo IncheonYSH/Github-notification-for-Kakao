@@ -8,18 +8,24 @@ import json
 
 
 class EventHandler:
+    """
+    github 이벤트를 처리하는 클래스
+
+    Attributes:
+        event_list: 처리할 github 이벤트 리스트와 메소드를 mapping 한 딕셔너리, dict 객체
+    """
     def __init__(self):
         self.event_list = {
-            'push': self._push,   # test ok
-            'issues': self._issues,   # test ok
-            'issue_comment': self._issue_comment,   # test ok
-            'commit_comment': self._commit_comment,   # test ok
-            'create': self._create,   # test ok
-            'delete': self._delete,   # test ok
-            'pull_request': self._pull_request,   # test ok
-            'pull_request_review': self._pull_request_review,   # test ok
-            'pull_request_review_comment': self._pull_request_review_comment,   # test ok
-            'fork': self._fork   # test ok
+            'push': self._push,
+            'issues': self._issues,
+            'issue_comment': self._issue_comment,
+            'commit_comment': self._commit_comment,
+            'create': self._create,
+            'delete': self._delete,
+            'pull_request': self._pull_request,
+            'pull_request_review': self._pull_request_review,
+            'pull_request_review_comment': self._pull_request_review_comment,
+            'fork': self._fork
         }
 
     def _push(self, context):
@@ -131,6 +137,9 @@ class EventHandler:
 
 
 class MetaSingleton(type):
+    """
+    싱글톤 구현을 위한 메타클래스
+    """
     _instances = {}
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
@@ -138,19 +147,25 @@ class MetaSingleton(type):
         return cls._instances[cls]
 
 class Kakao(metaclass=MetaSingleton):
-    def __init__(self, chatroom_name):
-        self.handle_kakao = win32gui.FindWindow(None, "카카오톡")
-        self.handle_main = win32gui.FindWindowEx(self.handle_kakao, None, "EVA_ChildWindow", None)
-        self.handle_friend = win32gui.FindWindowEx(self.handle_main, None, "EVA_Window", None)
-        self.handle_chatlist = win32gui.FindWindowEx(self.handle_main, self.handle_friend, "EVA_Window", None)
-        self.handle_roomsearch = win32gui.FindWindowEx(self.handle_chatlist, None, "Edit", None)
-        win32api.SendMessage(self.handle_roomsearch, win32con.WM_SETTEXT, 0, chatroom_name)
-        time.sleep(1)
-        self._press_enter(self.handle_roomsearch)
-        time.sleep(1)
+    """
+    윈도우 api를 통해 카카오톡으로 메세지를 발송하기 위한 클래스
 
-        self.handle_chatroom = win32gui.FindWindow(None, chatroom_name)
-        self.handle_textbox = win32gui.FindWindowEx(self.handle_chatroom, None, "RICHEDIT50W", None)
+    Attributes:
+        handle_textbox: 카카오톡
+    """
+    def __init__(self, chatroom_name):
+        handle_kakao = win32gui.FindWindow(None, "카카오톡")
+        handle_main = win32gui.FindWindowEx(handle_kakao, None, "EVA_ChildWindow", None)
+        handle_friend = win32gui.FindWindowEx(handle_main, None, "EVA_Window", None)
+        handle_chatlist = win32gui.FindWindowEx(handle_main, handle_friend, "EVA_Window", None)
+        handle_roomsearch = win32gui.FindWindowEx(handle_chatlist, None, "Edit", None)
+        win32api.SendMessage(handle_roomsearch, win32con.WM_SETTEXT, 0, chatroom_name)
+        time.sleep(1)
+        self._press_enter(handle_roomsearch)
+        time.sleep(1)
+        handle_chatroom = win32gui.FindWindow(None, chatroom_name)
+
+        self.handle_textbox = win32gui.FindWindowEx(handle_chatroom, None, "RICHEDIT50W", None)
 
     def message_send(self, message):
         win32api.SendMessage(self.handle_textbox, win32con.WM_SETTEXT, 0, message)
@@ -176,6 +191,7 @@ def webhook_receiver():
     global CHATROOM_NAME
     kakao = Kakao(CHATROOM_NAME)
 
+    # github 에서 발생한 이벤트가 지원하는 이벤트 리스트에 있으면 카카오톡 메세지 발송
     if event in api_info.event_list.keys():
         return_message = 'Kakao send'
         result = api_info.event_list[event](context)
